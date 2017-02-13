@@ -74,7 +74,7 @@ class Point {
 
 class SpringPoint extends Point {
 
-    constructor({ target = new Vector(), elasticity = 1e-1, color = '#f00', size = 3, damping = 1e-1 }) {
+    constructor({ target = new Vector(), elasticity = 1e-1, color = 'rgba(255, 0, 0, .6)', size = 3, damping = 1e-1 }) {
         super({ position: target, color, size });
         this.velocity = new Vector();
         this.target = target;
@@ -109,7 +109,8 @@ class SpringTrail extends SpringPoint {
         super(config);
         this.trail = range(config.trailSize || 10).map(index => {
             config.target = this.position;
-            config.elasticity = 1 / (index * 2 + 10);
+            config.elasticity = 1 / (index * 8);
+            config.damping = 5 / (index * 10 + 5);
             return new SpringPoint(config);
         });
     }
@@ -147,7 +148,8 @@ class Renderer {
     }
 
     clear() {
-        this.ctx.clearRect(0, 0, this.size.width, this.size.height);
+        this.ctx.fillStyle = 'rgba(0, 0, 0, .2)';
+        this.ctx.fillRect(0, 0, this.size.width, this.size.height);
     }
 
 }
