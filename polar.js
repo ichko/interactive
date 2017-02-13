@@ -1,3 +1,5 @@
+let range = n => Array.from(Array(n).keys())
+
 class Vector {
 
     constructor(x = 0, y = 0) {
@@ -58,6 +60,16 @@ class Point {
         this.size = size;
     }
 
+    render(ctx) {
+        ctx.beginPath();
+
+        ctx.fillStyle = this.color;
+        ctx.arc(this.position.x, this.position.y, this.size, 0, 2 * Math.PI);
+        ctx.fill();
+
+        ctx.closePath();
+    }
+
 }
 
 class SpringPoint extends Point {
@@ -84,25 +96,41 @@ class SpringPoint extends Point {
         this.position = this.position.add(this.velocity);
     }
 
-    render(ctx) {
-        ctx.beginPath();
-
-        ctx.fillStyle = this.color;
-        ctx.arc(this.position.x, this.position.y, this.size, 0, 2 * Math.PI);
-        ctx.fill();
-
-        ctx.closePath();
+    update() {
+        this.updatePosition();
+        this.updateVelocity();
     }
 
 }
 
+class SpringTrail extends SpringPoint {
+
+    constructor(config) {
+        super(config);
+        this.trail = range(config.trailSize || 10).map(index => {
+            config.target = this.position;
+            config.elasticity = 1 / (index * 2 + 10);
+            return new SpringPoint(config);
+        });
+    }
+
+    update() {
+        super.update();
+        this.trail.forEach(point => point.update());
+    }
+
+    render(ctx) {
+        super.render(ctx);
+        this.trail.forEach(point => point.render(ctx));
+    }
+
+}
+
+
 class Physics {
 
     update(objects) {
-        objects.forEach(object => {
-            object.updateVelocity();
-            object.updatePosition();
-        });
+        objects.forEach(object => object.update());
     }
 
 }
@@ -115,9 +143,7 @@ class Renderer {
     }
 
     render(objects) {
-        objects.forEach(object => {
-            object.render(this.ctx);
-        });
+        objects.forEach(object => object.render(ctx));
     }
 
     clear() {

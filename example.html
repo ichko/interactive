@@ -15,13 +15,14 @@
             let ctx = canvas.getContext('2d');
 
             let io = new IO();
-            let renderer = new Renderer(ctx, { width: canvas.width, height: canvas.height });
-            let physics = new Physics();
-            let engine = new Engine(physics, renderer);
+            let engine = new Engine(
+                new Physics(),
+                new Renderer(ctx, { width: canvas.width, height: canvas.height })
+            );
 
 
             engine.add(
-                new SpringPoint({target: io.mouse, size: 10})
+                new SpringTrail({ target: io.mouse, size: 2, trailSize: 100 })
             );
 
 
