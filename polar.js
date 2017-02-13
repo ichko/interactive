@@ -110,7 +110,7 @@ class SpringTrail extends SpringPoint {
         this.trail = range(config.trailSize || 10).map(index => {
             config.target = this.position;
             config.elasticity = 1 / (index * 8);
-            config.damping = 5 / (index * 10 + 5);
+            config.damping = 8 / (index * 10 + 5);
             return new SpringPoint(config);
         });
     }
