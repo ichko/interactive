@@ -1,10 +1,39 @@
 <html>
     <head>
         <title>Interactive</title>
+        <style>* { margin: 0; overflow: hidden; } #canvas {width: 100%;height: 100%;}</style>
     </head>
     <body>
-        <canvas id="polar"></canvas>
+        <canvas id="canvas"></canvas>
         
         <script src="polar.js"></script>
+        <script>
+
+            let canvas = document.getElementById('canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let ctx = canvas.getContext('2d');
+
+            let io = new IO();
+            let renderer = new Renderer(ctx, { width: canvas.width, height: canvas.height });
+            let physics = new Physics();
+            let engine = new Engine(physics, renderer);
+
+
+            engine.add(
+                new SpringPoint({target: io.mouse, size: 10})
+            );
+
+
+            (function animate(){
+                engine.clear();
+                engine.tick();
+                engine.render()
+
+                window.requestAnimationFrame(animate);
+            })();
+
+
+        </script>
     </body>
 </html>
