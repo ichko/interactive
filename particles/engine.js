@@ -210,17 +210,22 @@ let ParticleGenerator = new Generator(Particle, ({
 class Explosion {
     constructor(config) {
         this.particles = [];
-        this.fire(config);
+        this.config = config;
     }
 
-    fire({
+    fire() {
+        this.init(this.config);
+        return this;
+    }
+
+    init({
         size = 2,
         magnitude = 10,
         color,
         particleSize = 20,
         position = new Vector(),
-        fromAngle = Math.PI / 4 * 3,
-        toAngle = Math.PI / 4
+        fromAngle = 0,
+        toAngle = Math.PI * 2
     } = {}) {
         this.particles = this.particles.concat(ParticleGenerator.make(size, {
             color,
@@ -232,7 +237,7 @@ class Explosion {
     }
 
     recycle() {
-        this.particles = this.particles.filter(particle => particle.size > 0.1);
+        this.particles = this.particles.filter(particle => particle.size > 0.5);
     }
 
     alive() {
@@ -259,11 +264,10 @@ class Explosion {
 class Fountain extends Explosion {
     constructor(config) {
         super(config);
-        this.config = config;
     }
 
     update(dt) {
-        this.fire(this.config);
+        this.fire();
         super.update(dt);
     }
 }
