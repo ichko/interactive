@@ -208,28 +208,31 @@ let ParticleGenerator = new Generator(Particle, ({
 }));
 
 class Explosion {
-    constructor({
-        size = 50,
+    constructor(config) {
+        this.particles = [];
+        this.fire(config);
+    }
+
+    fire({
+        size = 2,
         magnitude = 10,
         color,
-        position = new Vector()
+        particleSize = 20,
+        position = new Vector(),
+        fromAngle = Math.PI / 4 * 3,
+        toAngle = Math.PI / 4
     } = {}) {
-        this.position = position;
-        this.particles = ParticleGenerator.make(size, {
+        this.particles = this.particles.concat(ParticleGenerator.make(size, {
             color,
             position,
-            size: 20,
-            velocity: () => Vector.randomPolar(1, 0, Math.PI * 2)
-                .scale(Utils.random(1, magnitude))
-        });
-
-        this.particles.forEach(particle => particle.alive = function() {
-            return this.size > 0.01;            
-        });
+            size: particleSize,
+            velocity: () => Vector.randomPolar(1, fromAngle, toAngle)
+                .scale(Utils.random(magnitude / 2, magnitude))
+        }));
     }
-    
+
     recycle() {
-        this.particles = this.particles.filter(particle => particle.alive());
+        this.particles = this.particles.filter(particle => particle.size > 0.1);
     }
 
     alive() {
@@ -250,5 +253,17 @@ class Explosion {
             particle.update(dt)
         });
         this.recycle();
+    }
+}
+
+class Fountain extends Explosion {
+    constructor(config) {
+        super(config);
+        this.config = config;
+    }
+
+    update(dt) {
+        this.fire(this.config);
+        super.update(dt);
     }
 }
