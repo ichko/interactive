@@ -1,5 +1,6 @@
 let Utils = {
-    random: (min = 0, max = 1) => Math.random() * (max - min) + min
+    random: (min = 0, max = 1) => Math.random() * (max - min) + min,
+    range: (size, handler) => Array.from(Array(size).keys()).map(handler)
 };
 
 class Renderer {
@@ -91,27 +92,6 @@ class Particle {
     }
 }
 
-class Generator {
-    constructor(cls, executor) {
-        this.cls = cls;
-        this.executor = executor;
-    }
-
-    single(params) {
-        let set = this.executor(params);
-        let instance = new this.cls();
-        for (let name in set) {
-            instance[name] = set[name]();
-        }
-        return instance;
-    }
-
-    make(size, params) {
-        return Array.from(Array(size).keys())
-            .map(() => this.single(params));
-    }
-}
-
 class Scene {
     constructor() {
         this.container = [];
@@ -195,17 +175,6 @@ class IO {
     }
 }
 
-let ParticleGenerator = new Generator(Particle, ({
-    size = 5,
-    color = '#906',
-    position = new Vector(),
-    velocity = () => new Vector()
-} = {}) => ({
-    size: () => size,
-    color: () => color,
-    position: () => position.copy(),
-    velocity: () => velocity()
-}));
 
 class Explosion {
     constructor(config) {
@@ -227,13 +196,13 @@ class Explosion {
         fromAngle = 0,
         toAngle = Math.PI * 2
     } = {}) {
-        this.particles = this.particles.concat(ParticleGenerator.make(size, {
+        this.particles = this.particles.concat(Utils.range(size, () => new Particle({
             color,
-            position,
+            position: position.copy(),
             size: particleSize,
-            velocity: () => Vector.randomPolar(1, fromAngle, toAngle)
+            velocity: Vector.randomPolar(1, fromAngle, toAngle)
                 .scale(Utils.random(magnitude / 2, magnitude))
-        }));
+        })));
     }
 
     recycle() {
