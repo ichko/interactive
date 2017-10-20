@@ -2,77 +2,82 @@ function random(min = 0, max = 1) {
     return Math.random() * (max - min) + min;
 }
 
-function randomArray(array) {
-    return array[Math.floor(random(0, array.length))]
-}
-
 function range(size = 0) {
     return Array.from(Array(size).keys());
 }
 
-function maxId(array, lambda) {
+function max(array, lambda) {
     let maxId = -1;
     const valueArray = array.map(lambda);
     valueArray.forEach((value, id) =>
         maxId = valueArray[maxId] < value ? id : maxId);
 
-    return maxId;
+    return { id: maxId, value: array[maxId] };
+}
+
+function probabilityPick(array) {
+    const arraySum = array.reduce((left, right) => left + right, 0);
+    const randomPosition = random(0, arraySum);
+    let probAccumulation = 0;
+
+    const result = array.map((value, id) => ({ value, id })).find(({ value }) => {
+        probAccumulation += value;
+        return probAccumulation >= randomPosition;
+    });
+
+    return result.id || -1;
 }
 
 
 class GeneticModel {
     constructor({
         murtationRate = 0.1,
-        populationSize = 50
+        populationSize = 50,
+        target = ''
     } = {}) {
         this.murationRate = murtationRate;
         this.populationSize = populationSize;
+        this.target = target;
         this.population = [];
         this.mostFit = {};
     }
 
     init() {
-        this.population = this.randomPopulation(this.populationSize);
-        this.mostFit = this.calculateMostFit(this.population);
+        this.population = this.randomPopulation(
+            this.populationSize, this.target.length);
+        this.mostFit = this.calculateMostFit(this.population, this.target);
+
         return this;
     }
 
     tick() {
         this.population = this.evolvePopulation(
             this.population,
-            this.populationSize
+            this.populationSize,
+            this.target
         );
-        this.mostFit = this.calculateMostFit(this.population);
+        this.mostFit = this.calculateMostFit(this.population, this.target);
 
         return this;
     }
 
 
-    calculateMostFit(population) {
-        const mostFitId = maxId(population, dna => this.fitness(dna));
-        return population[mostFitId];
+    calculateMostFit(population, target) {
+        const { id, value: fitnessValue } = max(population,
+            dna => this.fitness(dna, target));
+
+        return { value: population[id], fitness: fitnessValue };
     }
 
-    randomPopulation(size) {
-        return range(size).map(() => this.randomDna());
+    randomPopulation(size, dnaSize) {
+        return range(size).map(() => this.randomDna(dnaSize));
     }
 
-    probabilityPick(array) {
-        const arraySum = array.reduce((left, right) => left + right, 0);
-        const randomPosition = random(0, arraySum);
-        let probAccumulation = 0;
-
-        return arraySum.map((value, id) => ({ value, id })).find(value => {
-            probAccumulation += value;
-            return probAccumulation >= randomPosition;
-        }).id || [];
-    }
-
-    evolvePopulation(population, newPopulationSize) {
-        let populationFitness = population.map(dna => this.fitness(dna));
+    evolvePopulation(population, newPopulationSize, target) {
+        let populationFitness = population.map(dna => this.fitness(dna, target));
         return range(newPopulationSize).map(() => {
-            const leftParentId = this.probabilityPick(populationFitness);
-            const rightParentId = this.probabilityPick(populationFitness);
+            const leftParentId = probabilityPick(populationFitness);
+            const rightParentId = probabilityPick(populationFitness);
 
             return this.mutate(this.crossover(
                 population[leftParentId],
@@ -82,11 +87,11 @@ class GeneticModel {
     }
 
     fitness(dna, target) {
-        return dna.filter((letter, id) => letter === target[id]).length;
+        return dna.split('').filter((letter, id) => letter === target[id]).length;
     }
 
     randomGenome() {
-        return String.fromCharCode(65 + random(0, 26));
+        return String.fromCharCode(97 + random(0, 26));
     }
 
     randomDna(size) {
@@ -94,7 +99,7 @@ class GeneticModel {
     }
 
     crossover(leftParent, rightParent) {
-        const cutPoint = Math.floor(0, leftParent.length);
+        const cutPoint = Math.floor(random(0, leftParent.length));
         return leftParent.slice(0, cutPoint)
             .concat(rightParent.slice(cutPoint, rightParent.length));
     }
@@ -102,6 +107,23 @@ class GeneticModel {
     mutate(dna, murationRate) {
         return dna.split('').map(letter =>
             murationRate < random(0, 1) ?
-                this.randomGenome() : letter);
+                this.randomGenome() : letter).join('');
     }
 }
+
+const target = 'hello world';
+const model = new GeneticModel({
+    murationRate: 0.01,
+    populationSize: 100,
+    target
+}).init();
+
+let interval = setInterval(() => {
+    console.log(`most fit: ${ model.mostFit.value }, ${ model.mostFit.fitness }`);
+
+    model.tick();
+    if (model.mostFit === target) {
+        clearInterval(interval);
+        console.log('done');
+    }
+}, 500);
