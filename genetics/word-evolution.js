@@ -119,7 +119,7 @@ class GeneticModel {
     }
 }
 
-const target = 'hello world';
+const target = 'to be or not to be';
 const model = new GeneticModel({
     mutationRate: 0.01,
     populationSize: 100,
@@ -128,9 +128,10 @@ const model = new GeneticModel({
 
 let generation = 0;
 let interval = setInterval(() => {
-    console.log(`most fit: ${ model.mostFit.value }, ${ model.mostFit.fitness }, gen: ${ generation++ }`);
-
     model.tick();
+
+    console.log(`most fit: ${ model.mostFit.value }, fitness: ${ model.mostFit.fitness }, gen: ${ generation++ }`);
+
     if (model.mostFit.value === target) {
         clearInterval(interval);
         console.log('done');
