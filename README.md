@@ -1,6 +1,6 @@
 # Interactive playground
 ## Links
- - [Pulsating heart](https://rawgit.com/ichko/interactive/master/polar_heart/example.html)
+ - [Pulsating heart](https://rawgit.com/ichko/interactive/master/polar-heart/example.html)
  - [Explosions](https://rawgit.com/ichko/interactive/master/particles/index.html) (click on the screen)
 
 ## Screenshots
