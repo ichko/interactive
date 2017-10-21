@@ -15,6 +15,33 @@ class Vector {
 
         return this;
     }
+    
+    subtract({ x, y }) {
+        this.x -= x;
+        this.y -= y;
+
+        return this;
+    }
+    
+    scale(size) {
+        this.x *= size;
+        this.y *= size;
+
+        return this;
+    }
+    
+    copy() {
+        return new Vector(this.x, this.y);
+    }
+    
+    length() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+    
+    scaleTo(size) {
+        let len = this.length();
+        this.scale(size / len);
+    }
 }
 
 function vec(x, y) {
@@ -48,10 +75,24 @@ class Snake extends Creature {
         super(config);
         this.tailSize = 3;
         this.tail = range(this.tailSize).map(() => new Creature(config));
+        this.tail.push(this);
     }
     
     update() {
         super.update();
+        for (let i = 0;i < this.tail.length - 1;i++) {
+            this.tail[i].position.add(
+                this.tail[i].position[i + 1]
+                    .copy()
+                    .subtract(this.tail[i].position)
+                    .scaleTo(this.velocity.length())
+            );
+        }
+    }
+    
+    render(ctx) {
+        super.render(ctx);
+        this.tail.forEach(object => object.render(ctx));
     }
 }
 
