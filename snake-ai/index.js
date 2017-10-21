@@ -8,36 +8,36 @@ class Vector {
         this.x = x;
         this.y = y;
     }
-    
+
     add({ x, y }) {
         this.x += x;
         this.y += y;
 
         return this;
     }
-    
+
     subtract({ x, y }) {
         this.x -= x;
         this.y -= y;
 
         return this;
     }
-    
+
     scale(size) {
         this.x *= size;
         this.y *= size;
 
         return this;
     }
-    
+
     copy() {
         return new Vector(this.x, this.y);
     }
-    
+
     length() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
-    
+
     scaleTo(size) {
         let len = this.length() || 1;
         this.scale(size / len);
@@ -58,7 +58,7 @@ class Creature {
         this.color = color;
         this.velocity = velocity;
     }
-    
+
     render(ctx) {
         ctx.beginPath();
         ctx.fillStyle = this.color;
@@ -66,7 +66,7 @@ class Creature {
         ctx.fill();
         ctx.closePath();
     }
-    
+
     update() {
         this.position.add(this.velocity);
     }
@@ -87,13 +87,12 @@ class Snake extends Creature {
 
     update() {
         super.update();
-        for (let i = 0;i < this.tail.length - 1;i++) {
-            this.tail[i].position.add(
-                this.tail[i + 1].position
-                    .copy()
-                    .subtract(this.tail[i].position)
-                    .scale(1 / (this.size * 2))
-            );
+        for (let i = this.tail.length - 1;i >= 1;i--) {
+            const direction = this.tail[i].position
+                .copy()
+                .subtract(this.tail[i - 1].position);
+            this.tail[i - 1].position.add(direction.scaleTo(direction.length() - this.size * 2));
+            // this.tail[i - 1].position.add(direction.scale(0.5));
         }
     }
 
@@ -111,22 +110,22 @@ class Engine {
         this.scene = [];
         this.canvasSize = { width, height };
     }
-    
+
     addToScene(object) {
         this.scene.push(object);
         return this;
     }
-    
+
     update() {
         this.scene.forEach(object => object.update());
         return this;
     }
-    
+
     render(ctx) {
         this.scene.forEach(object => object.render(ctx));
         return this;
     }
-    
+
     clear(ctx) {
         ctx.clearRect(
             -this.canvasSize.width / 2, 
@@ -153,9 +152,9 @@ ctx.translate(width / 2, -height / 2);
 
 const engine = new Engine({ width, height });
 const snake = new Snake({
-    size: 1,
-    color: 'rgba(0,0,0,0.3)',
-    tailSize: 50,
+    size: 10,
+    color: 'rgba(250, 10, 100, 1)',
+    tailSize: 10,
     position: vec(10, 10),
     velocity: vec(1, 1)
 });
@@ -166,11 +165,11 @@ let frame = 0;
 (function animation() {
     frame++;
 
-    snake.position.x = Math.sin(frame / 15) * 200;
-    snake.position.y = Math.cos(frame / 16) * 300;
+    snake.position.x = Math.sin(frame / 70) * 350;
+    snake.position.y = Math.cos(frame / 20) * 150;
 
     engine
-        //.clear(ctx)
+        .clear(ctx)
         .update()
         .render(ctx);
 
