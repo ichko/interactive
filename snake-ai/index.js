@@ -39,8 +39,10 @@ class Vector {
     }
     
     scaleTo(size) {
-        let len = this.length();
+        let len = this.length() || 1;
         this.scale(size / len);
+
+        return this;
     }
 }
 
@@ -73,26 +75,33 @@ class Creature {
 class Snake extends Creature {
     constructor(config) {
         super(config);
-        this.tailSize = 3;
-        this.tail = range(this.tailSize).map(() => new Creature(config));
+        this.tailSize = config.tailSize || 1;
+        this.tail = range(this.tailSize).map(() => new Creature({
+            position: config.position.copy(),
+            size: config.size,
+            color: config.color
+        }));
+
         this.tail.push(this);
     }
-    
+
     update() {
         super.update();
         for (let i = 0;i < this.tail.length - 1;i++) {
             this.tail[i].position.add(
-                this.tail[i].position[i + 1]
+                this.tail[i + 1].position
                     .copy()
                     .subtract(this.tail[i].position)
-                    .scaleTo(this.velocity.length())
+                    .scale(1 / (this.size * 2))
             );
         }
     }
-    
+
     render(ctx) {
         super.render(ctx);
-        this.tail.forEach(object => object.render(ctx));
+        for (let i = 0;i < this.tail.length - 1;i++) {
+            this.tail[i].render(ctx);
+        }
     }
 }
 
@@ -103,7 +112,7 @@ class Engine {
         this.canvasSize = { width, height };
     }
     
-    addToScne(object) {
+    addToScene(object) {
         this.scene.push(object);
         return this;
     }
@@ -144,16 +153,24 @@ ctx.translate(width / 2, -height / 2);
 
 const engine = new Engine({ width, height });
 const snake = new Snake({
-    size: 5,
+    size: 1,
+    color: 'rgba(0,0,0,0.3)',
+    tailSize: 50,
     position: vec(10, 10),
     velocity: vec(1, 1)
 });
 
-engine.addToScne(snake);
+engine.addToScene(snake);
 
+let frame = 0;
 (function animation() {
+    frame++;
+
+    snake.position.x = Math.sin(frame / 15) * 200;
+    snake.position.y = Math.cos(frame / 16) * 300;
+
     engine
-        .clear(ctx)
+        //.clear(ctx)
         .update()
         .render(ctx);
 
