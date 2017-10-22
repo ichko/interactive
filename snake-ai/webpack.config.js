@@ -12,7 +12,7 @@ module.exports = {
   },
   context: path.resolve(__dirname, './'),
   resolve: {
-    modules: ['./node_modules', './'],
+    modules: ['./node_modules', './src', './'],
   },
   entry: {
     index: ['./']
