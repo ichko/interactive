@@ -184,8 +184,8 @@ let frame = 0;
 (function animation() {
   frame++;
 
-  snake.position.x = Math.sin(frame / 70) * Math.random() * 500;
-  snake.position.y = Math.cos(frame / 20) * Math.random() * 200;
+  snake.position.x = Math.sin(frame / 70) * 500;
+  snake.position.y = Math.cos(frame / 20) * 200;
 
   engine
     .clear(ctx)
