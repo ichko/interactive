@@ -1,6 +1,6 @@
 import { vec } from 'vector';
 import { Engine } from 'engine';
-import { Snake } from 'life';
+import { Snake } from 'snake';
 
 
 const [ width, height ] = [ window.innerWidth, window.innerHeight ];

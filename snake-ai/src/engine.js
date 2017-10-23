@@ -10,12 +10,12 @@ export class Engine {
   }
 
   update() {
-    this.scene.forEach(object => object.update());
+    this.scene.forEach(object => object.update && object.update());
     return this;
   }
 
   render(ctx) {
-    this.scene.forEach(object => object.render(ctx));
+    this.scene.forEach(object => object.render && object.render(ctx));
     return this;
   }
 
