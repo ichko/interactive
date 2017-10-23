@@ -1,5 +1,6 @@
 import { vec } from 'vector';
 
+
 export class Creature {
   constructor({
     position, size,
@@ -9,6 +10,12 @@ export class Creature {
     this.size = size;
     this.color = color;
     this.velocity = velocity;
+    this.plugins = [];
+    this.plug(new Movement);
+  }
+
+  get orientation() {
+    return Math.atan2(this.velocity.y, this.velocity.x);
   }
 
   render(ctx) {
@@ -17,9 +24,26 @@ export class Creature {
     ctx.arc(this.position.x, this.position.y, this.size, 0, 2 * Math.PI);
     ctx.fill();
     ctx.closePath();
+
+    this.plugins.forEach(plugin =>
+      plugin.forEach(part =>
+        part.render && part.render(ctx)));
   }
 
   update() {
-    this.position.add(this.velocity);
+    let value = this;
+    this.plugins.forEach(plugin =>
+      plugin.forEach(part =>
+        value = part.call(this, value)));
+  }
+
+  plug(...plugin) {
+    this.plugins.push(plugin);
+  }
+}
+
+class Movement {
+  call(creature) {
+    creature.position.add(creature.velocity);
   }
 }

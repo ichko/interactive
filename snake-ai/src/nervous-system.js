@@ -1,5 +1,52 @@
+import { vec, polar } from 'vector';
+import { range, argMin } from 'utils';
 
+class Sight {
+  constructor({
+    fov = Math.PI / 2,
+    strength = 16,
+    environment = []
+  }) {
+    this.strength = strength;
+    this.fov = fov;
+    this.environment = environment;
+  }
 
-class NeuralNetwork {
+  getSightDirections({ position, orientation }) {
+    return range(this.strength)
+      .map(rayId => (rayId + 1) / this.strength * this.fov - this.fov / 2)
+      .map(rayAngle => polar(orientation.copy().add(rayAngle)));
+  }
 
+  intersect({ direction, position }, element) {
+    return {
+      valid: true,
+      distance: element.position.distance(direction)
+    };
+  }
+
+  call(sightContext) {
+    return environment
+      .map(element => this.getSightDirections(sightContext)
+        .find(direction => this.intersects({
+          direction,
+          position: sightContext.position
+        }, element)));
+  }
+}
+
+class OccipitalLobe {
+  constructor(architecture) {
+    this.architecture = architecture;
+  }
+
+  call(sight) {
+    return this.feedForward(sight);
+  }
+}
+
+class Navigator {
+  call(creature, direction) {
+    creature.steer(direction);
+  }
 }

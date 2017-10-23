@@ -2,6 +2,13 @@ export function vec(x, y) {
   return new Vector(x, y);
 }
 
+export function polar(angle, magnitude = 1) {
+  return new Vector(
+    magnitude * Math.cos(angle),
+    magnitude * Math.sin(angle)
+  );
+}
+
 class Vector {
   constructor(x = 0, y = 0) {
     this.x = x;
@@ -35,6 +42,12 @@ class Vector {
 
   length() {
     return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
+
+  distance(vector) {
+    return this.copy()
+      .subtract(vector)
+      .length();
   }
 
   scaleTo(size) {

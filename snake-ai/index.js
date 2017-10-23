@@ -28,8 +28,8 @@ let frame = 0;
 (function animation() {
   frame++;
 
-  snake.position.x = Math.sin(frame / 70) * 500;
-  snake.position.y = Math.cos(frame / 20) * 200;
+  snake.position.x = Math.cos(frame / 200) * 800;
+  snake.position.y = (Math.sin(frame / 15) + Math.sin(frame / 30)) * 100;
 
   engine
     .clear(ctx)

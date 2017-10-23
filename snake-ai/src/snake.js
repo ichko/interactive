@@ -6,7 +6,7 @@ export class Snake extends Creature {
   constructor(config) {
     super(config);
     this.tailSize = config.tailSize;
-    this.tail = range(this.tailSize).map(() => new Creature({
+    this.tail = range(this.tailSize).map(id => new Creature({
       position: config.position.copy(),
       size: config.size,
       color: config.color
