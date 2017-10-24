@@ -25,10 +25,10 @@ export class Snake extends Creature {
     }
   }
 
-  render(ctx) {
-    super.render(ctx);
+  render(renderer) {
+    super.render(renderer);
     for (let i = 0;i < this.tail.length - 1;i++) {
-      this.tail[i].render(ctx);
+      this.tail[i].render(renderer);
     }
   }
 }

@@ -78,7 +78,7 @@ export class OccipitalLobe {
 }
 
 export class Navigator {
-  render(ctx) {
+  render(renderer) {
     // ctx.fillRect(0,0,50,50);
   }
 

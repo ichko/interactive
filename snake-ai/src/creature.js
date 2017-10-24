@@ -18,20 +18,16 @@ export class Creature {
     this.velocity.rotate(angle);
   }
 
-  get orientation() {
-    return this.velocity.angle;
-  }
-
-  render(ctx) {
-    ctx.beginPath();
-    ctx.fillStyle = this.color;
-    ctx.arc(this.position.x, this.position.y, this.size, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.closePath();
+  render(renderer) {
+    renderer.circle({
+      x: this.position.x,
+      y: this.position.y,
+      radius: this.size
+    }, { color: this.color });
 
     this.plugins.forEach(plugin =>
       plugin.forEach(part =>
-        part.render && part.render(ctx)));
+        part.render && part.render(renderer)));
   }
 
   update() {

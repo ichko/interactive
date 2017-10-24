@@ -1,5 +1,6 @@
 import { vec } from 'vector';
 import { Engine } from 'engine';
+import { CanvasRenderer } from 'renderer';
 import { Snake } from 'snake';
 import { Sight, OccipitalLobe, Navigator } from 'nervous-system';
 
@@ -14,7 +15,8 @@ ctx.scale(1, -1);
 ctx.translate(width / 2, -height / 2);
 
 
-const engine = new Engine({ width, height });
+const renderer = new CanvasRenderer(ctx, { width, height });
+const engine = new Engine(renderer);
 const snake = new Snake({
     size: 5,
     color: 'rgba(250, 10, 100, 1)',

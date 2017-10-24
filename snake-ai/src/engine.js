@@ -1,7 +1,7 @@
 export class Engine {
-  constructor({ width, height }) {
+  constructor(renderer) {
     this.scene = [];
-    this.canvasSize = { width, height };
+    this.renderer = renderer;
   }
 
   addToScene(object) {
@@ -14,19 +14,14 @@ export class Engine {
     return this;
   }
 
-  render(ctx) {
-    this.scene.forEach(object => object.render && object.render(ctx));
+  render() {
+    this.scene.forEach(object =>
+      object.render && object.render(this.renderer));
     return this;
   }
 
-  clear(ctx) {
-    ctx.clearRect(
-      -this.canvasSize.width / 2, 
-      -this.canvasSize.height / 2,
-      this.canvasSize.width,
-      this.canvasSize.height
-    );
-
+  clear() {
+    this.renderer.clear();
     return this;
   }
 }
