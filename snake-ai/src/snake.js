@@ -1,6 +1,10 @@
 import { range } from 'utils';
 import { Creature } from 'creature';
 
+export class Food extends Creature {
+
+}
+
 export class Snake extends Creature {
   constructor(config) {
     super(config);
