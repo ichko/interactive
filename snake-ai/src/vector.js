@@ -9,10 +9,24 @@ export function polar(angle, magnitude = 1) {
   );
 }
 
+
 class Vector {
   constructor(x = 0, y = 0) {
     this.x = x;
     this.y = y;
+  }
+
+  get angle() {
+    return Math.atan2(this.y, this.x);
+  }
+
+  rotate(angle) {
+    const oldX = this.x;
+
+    this.x = this.x * Math.cos(angle) - this.y * Math.sin(angle);
+    this.y = this.y * Math.cos(angle) + oldX * Math.sin(angle);
+
+    return this;
   }
 
   add({ x, y }) {
@@ -51,7 +65,7 @@ class Vector {
   }
 
   scaleTo(size) {
-    let len = this.length() || 1;
+    const len = this.length() || 1;
     this.scale(size / len);
 
     return this;

@@ -14,7 +14,7 @@ class Sight {
 
   getSightDirections({ position, orientation }) {
     return range(this.strength)
-      .map(rayId => (rayId + 1) / this.strength * this.fov - this.fov / 2)
+      .map(rayId => rayId / (this.strength - 1) * this.fov - this.fov / 2)
       .map(rayAngle => polar(orientation.copy().add(rayAngle)));
   }
 
@@ -40,7 +40,7 @@ class OccipitalLobe {
     this.architecture = architecture;
   }
 
-  call(sight) {
+  call(_, sight) {
     return this.feedForward(sight);
   }
 }

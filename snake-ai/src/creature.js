@@ -14,8 +14,12 @@ export class Creature {
     this.plug(new Movement);
   }
 
+  steer(angle) {
+    this.velocity.rotate(angle);
+  }
+
   get orientation() {
-    return Math.atan2(this.velocity.y, this.velocity.x);
+    return this.velocity.angle;
   }
 
   render(ctx) {
