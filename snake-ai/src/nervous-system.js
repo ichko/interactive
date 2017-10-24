@@ -1,57 +1,45 @@
 import { vec } from 'vector';
-import { range, argMin } from 'utils';
+import { range, argMin, math } from 'utils';
 
 
 export class Sight {
   constructor({
     fov = Math.PI / 2,
-    rayCount = 16,
-    strength = 15,
+    rayCount = 8,
+    strength = 250,
     environment = []
   } = {}) {
-    this.fov = fov;
-    this.rayCount = rayCount;
     this.strength = strength;
+    this.rayAngles = range(rayCount)
+      .map(rayId => rayId / (rayCount - 1) * fov - fov / 2);
     this.environment = environment;
   }
 
   getSightDirections(velocity) {
-    return range(this.rayCount)
-      .map(rayId => rayId / (this.rayCount - 1) * this.fov - this.fov / 2)
+    return this.rayAngles
       .map(rayAngle => velocity.copy.rotate(rayAngle));
   }
 
   intersect(ray, element) {
-    const r = element.size;
-    const eye = ray.position.copy.add(ray.direction.scaleTo(this.strength));
-    const { x: dx, y: dy } = ray.position.subtract(eye);
-    const dr = eye.length;
-    const det = element.position.x * eye.y - eye.x * element.position.y;
-    const disc = r * r * dr * dr - det * det;
-    const discRoot = Math.sqrt(disc);
-
-    const x1 = (det * dy + Math.sign(dy) * dx * discRoot) / (dr * dr);
-    const x2 = (det * dy - Math.sign(dy) * dx * discRoot) / (dr * dr);
-
-    const y1 = (-det * dx + Math.abs(dy) * discRoot) / (dr * dr);
-    const y2 = (-det * dx - Math.abs(dy) * discRoot) / (dr * dr);
-
-    const p1 = vec(x1, y1);
-    const p2 = vec(x2, y2);
-    const minLenId = argMin([p1, p2], vector => vector.length);
-    const minLenP = [p1, p2][minLenId];
-
-    return {
-      valid: disc >= 0,
-      distance: minLenP.length,
-      intersection: minLenP,
-      element
-    };
+    return math.intersect.lineCircle({
+      start: ray.position,
+      end: ray.position.copy.add(ray.direction.scaleTo(this.strength))
+    }, {
+      position: element.position,
+      radius: element.size
+    });
   }
 
   call(self) {
+    this.rays = [];
+
     return this.getSightDirections(self.velocity)
       .map(direction => {
+        this.rays.push({
+          direction: direction.scaleTo(this.strength),
+          position: self.position
+        });
+
         const intersections = this.environment
           .map(element => this.intersects({
             position: self.position,
@@ -63,6 +51,10 @@ export class Sight {
           intersections, ({ distance }) => distance
         )];
       });
+  }
+
+  render(renderer) {
+    this.rays.forEach(ray => renderer.ray(ray));
   }
 }
 
@@ -78,10 +70,6 @@ export class OccipitalLobe {
 }
 
 export class Navigator {
-  render(renderer) {
-    // ctx.fillRect(0,0,50,50);
-  }
-
   call(self, direction) {
     self.steer(direction);
   }

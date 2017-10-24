@@ -1,3 +1,6 @@
+import { vec } from 'vector';
+
+
 export class CanvasRenderer {
   constructor(ctx, { width = 50, height = 50 } = {}) {
     this.ctx = ctx;
@@ -21,13 +24,16 @@ export class CanvasRenderer {
     );
   }
 
-  renderRay(ctx, { position, orientation }, { color = 'red' }) {
-    const lineEnd = position.copy.add(orientation);
+  ray({
+    position = vec(),
+    direction = vec()
+  } = {}, { color } = {}) {
+    const lineEnd = position.copy.add(direction);
 
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(position.x, position.y);
-    ctx.lineTo(lineEnd.x, lineEnd.y);
-    ctx.stroke();
+    this.ctx.fillStyle = color;
+    this.ctx.beginPath();
+    this.ctx.moveTo(position.x, position.y);
+    this.ctx.lineTo(lineEnd.x, lineEnd.y);
+    this.ctx.stroke();
   }
 }
