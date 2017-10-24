@@ -1,12 +1,13 @@
-import { vec, polar } from 'vector';
-import { range, argMin } from 'utils';
+import { polar } from 'vector';
+import { range } from 'utils';
 
-class Sight {
+
+export class Sight {
   constructor({
     fov = Math.PI / 2,
     strength = 16,
     environment = []
-  }) {
+  } = {}) {
     this.strength = strength;
     this.fov = fov;
     this.environment = environment;
@@ -18,15 +19,15 @@ class Sight {
       .map(rayAngle => polar(orientation.copy().add(rayAngle)));
   }
 
-  intersect({ direction, position }, element) {
+  intersect({ orientation, position }, element) {
     return {
       valid: true,
-      distance: element.position.distance(direction)
+      distance: element.position.distance(orientation)
     };
   }
 
   call(sightContext) {
-    return environment
+    return this.environment
       .map(element => this.getSightDirections(sightContext)
         .find(direction => this.intersects({
           direction,
@@ -35,18 +36,23 @@ class Sight {
   }
 }
 
-class OccipitalLobe {
+export class OccipitalLobe {
   constructor(architecture) {
     this.architecture = architecture;
   }
 
   call(_, sight) {
-    return this.feedForward(sight);
+    // return this.feedForward(sight);
+    return 0.01;
   }
 }
 
-class Navigator {
-  call(creature, direction) {
-    creature.steer(direction);
+export class Navigator {
+  render(ctx) {
+    // ctx.fillRect(0,0,50,50);
+  }
+
+  call(self, direction) {
+    self.steer(direction);
   }
 }

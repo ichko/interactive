@@ -1,4 +1,3 @@
-import { vec } from 'vector';
 import { range } from 'utils';
 import { Creature } from 'creature';
 

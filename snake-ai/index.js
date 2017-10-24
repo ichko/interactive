@@ -1,6 +1,7 @@
 import { vec } from 'vector';
 import { Engine } from 'engine';
 import { Snake } from 'snake';
+import { Sight, OccipitalLobe, Navigator } from 'nervous-system';
 
 
 const [ width, height ] = [ window.innerWidth, window.innerHeight ];
@@ -15,22 +16,21 @@ ctx.translate(width / 2, -height / 2);
 
 const engine = new Engine({ width, height });
 const snake = new Snake({
-  size: 5,
-  color: 'rgba(250, 10, 100, 1)',
-  tailSize: 50,
-  position: vec(10, 10),
-  velocity: vec(1, 1)
-});
+    size: 5,
+    color: 'rgba(250, 10, 100, 1)',
+    tailSize: 50,
+    position: vec(10, 10),
+    velocity: vec(1, 1)
+  })
+  .plug(
+    new Sight(),
+    new OccipitalLobe(),
+    new Navigator()
+  );
 
 engine.addToScene(snake);
 
-let frame = 0;
 (function animation() {
-  frame++;
-
-  snake.position.x = Math.cos(frame / 200) * 800;
-  snake.position.y = (Math.sin(frame / 15) + Math.sin(frame / 30)) * 100;
-
   engine
     .clear(ctx)
     .update()

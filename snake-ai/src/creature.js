@@ -11,7 +11,7 @@ export class Creature {
     this.color = color;
     this.velocity = velocity;
     this.plugins = [];
-    this.plug(new Movement);
+    this.plug(new Movement());
   }
 
   steer(angle) {
@@ -43,11 +43,12 @@ export class Creature {
 
   plug(...plugin) {
     this.plugins.push(plugin);
+    return this;
   }
 }
 
 class Movement {
-  call(creature) {
-    creature.position.add(creature.velocity);
+  call(self) {
+    self.position.add(self.velocity);
   }
 }
