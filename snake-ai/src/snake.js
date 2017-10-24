@@ -6,7 +6,7 @@ export class Snake extends Creature {
     super(config);
     this.tailSize = config.tailSize;
     this.tail = range(this.tailSize).map(id => new Creature({
-      position: config.position.copy(),
+      position: config.position.copy,
       size: config.size,
       color: config.color
     }));
@@ -18,11 +18,10 @@ export class Snake extends Creature {
     super.update();
     for (let i = this.tail.length - 1;i >= 1;i--) {
       const direction = this.tail[i].position
-        .copy()
-        .subtract(this.tail[i - 1].position);
+        .copy.subtract(this.tail[i - 1].position);
 
       this.tail[i - 1].position.add(direction
-        .scaleTo(direction.length() - this.size * 2));
+        .scaleTo(direction.length - this.size * 2));
     }
   }
 

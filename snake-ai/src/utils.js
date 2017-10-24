@@ -13,3 +13,13 @@ export function argMin(elements, handler = x => x) {
 
   return minId;
 }
+
+export function renderRay(ctx, { position, orientation }, { color = 'red' }) {
+  const lineEnd = position.copy.add(orientation);
+
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(position.x, position.y);
+  ctx.lineTo(lineEnd.x, lineEnd.y);
+  ctx.stroke();
+}

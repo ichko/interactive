@@ -50,22 +50,22 @@ class Vector {
     return this;
   }
 
-  copy() {
+  get copy() {
     return new Vector(this.x, this.y);
   }
 
-  length() {
+  get length() {
     return Math.sqrt(this.x * this.x + this.y * this.y);
   }
 
   distance(vector) {
-    return this.copy()
+    return this.copy
       .subtract(vector)
-      .length();
+      .length;
   }
 
   scaleTo(size) {
-    const len = this.length() || 1;
+    const len = this.length || 1;
     this.scale(size / len);
 
     return this;
