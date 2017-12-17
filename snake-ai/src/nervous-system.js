@@ -58,6 +58,7 @@ export class Sight {
   }
 }
 
+
 export class OccipitalLobe {
   constructor(architecture) {
     this.architecture = architecture;
@@ -65,9 +66,10 @@ export class OccipitalLobe {
 
   call(self, sight) {
     // return this.feedForward(sight);
-    return (Math.random() - 0.4) / 10;
+    return (Math.sin(self.position.x * self.position.y));
   }
 }
+
 
 export class Navigator {
   call(self, direction) {

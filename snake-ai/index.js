@@ -18,7 +18,7 @@ ctx.translate(width / 2, -height / 2);
 function aiSnake(size, position, environment) {
   return new Snake({
     size, color: 'rgba(250, 10, 100, 1)',
-    tailSize: 0, position, velocity: vec(0, 1)
+    tailSize: 10, position, velocity: vec(0, 5)
   })
   .plug(new Sight(environment), new OccipitalLobe(), new Navigator());
 }
