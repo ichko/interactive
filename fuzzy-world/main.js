@@ -57,12 +57,11 @@ class Vector {
 }
 
 class Particle {
-  constructor(position, velocity, influenceRadius, size, color) {
+  constructor(position, velocity, size, color) {
     this.position = position;
     this.color = color;
     this.size = size;
     this.velocity = velocity;
-    this.influenceRadius = influenceRadius;
   }
 
   update() {
@@ -85,13 +84,9 @@ class Particle {
     ctx.stroke()
   }
 
-  static many(
-    numParticles, positionGetter, velocityGetter,
-    influenceRadius, size, color
-  ) {
+  static many(numParticles, positionGetter, velocityGetter, size, color) {
     return Array.from(Array(numParticles).keys()).map(() => new Particle(
-      positionGetter(), velocityGetter(),
-      influenceRadius, size, color
+      positionGetter(), velocityGetter(), size, color
     ));
   }
 }
@@ -122,10 +117,8 @@ function attract(fromParticles, toParticles, attraction) {
   fromParticles.forEach(fromP => {
     toParticles.forEach(toP => {
       let dist = fromP.position.distance(toP.position);
-      if (dist < fromP.influenceRadius) {
-        fromP.velocity = fromP.velocity
-          .add(toP.position.subtract(fromP.position).scale(attraction));
-      }
+      fromP.velocity = fromP.velocity
+        .add(toP.position.subtract(fromP.position).scale(attraction));
 
       if (dist < fromP.size + toP.size) {
         fromP.velocity = fromP.velocity
@@ -143,6 +136,91 @@ function addFriction(particles, friction) {
 }
 
 
+const fuzzy = {
+  trigNumber: (left, mid, right) => x => {
+    if (left <= x && x < mid) return (x - left) / (mid - left);
+    if (mid <= x && x < right) return (right - x) / (right - mid);
+    return 0;
+  },
+  or: (a, b) => Math.max(a, b),
+  and: (a, b) => Math.min(a, b),
+  implication: (cut, func) => x => Math.min(cut, func(x)),
+
+  distance: {
+    low: x => fuzzy.trigNumber(0, 0, 100)(x),
+    medium: x => fuzzy.trigNumber(50, 150, 200)(x),
+    high: x => fuzzy.trigNumber(150, 250, 300)(x)
+  },
+  force: {
+    weak: x => fuzzy.trigNumber(0, 0, 10)(x),
+    strong: x => fuzzy.trigNumber(0, 10, 10)(x)
+  },
+  // Works by integrating the membership function and takes the middle
+  defuzz(membershipFunc, from, to, steps) {
+    let integralSum = 0;
+    let integralSums = [];
+    let step = (to - from) / steps;
+
+    for (var xi = from; xi <= to; xi += step) {
+      integralSum += membershipFunc(xi);
+      integralSums.push({integralSum, xi});
+    }
+
+    if (integralSum <= 1e-3) return from;
+
+    while (integralSums[integralSums.length - 1].integralSum >= integralSum / 2) {
+      integralSums.pop();
+    }
+
+    return integralSums[integralSums.length - 1].xi;
+  }
+};
+
+function applyForceRule(fromParticles, toParticles, rule, ctx) {
+  fromParticles.forEach(fromP => {
+    toParticles.forEach(toP => {
+      let dist = fromP.position.distance(toP.position);
+      let force = rule(dist) / 100;
+
+      if (force > 0) {
+        ctx.beginPath();
+        ctx.lineWidth = force * 10;
+        ctx.strokeStyle = 'white';
+        ctx.moveTo(fromP.position.x, fromP.position.y);
+        ctx.lineTo(toP.position.x, toP.position.y);
+        ctx.stroke();
+      }
+
+      fromP.velocity = fromP.velocity.add(toP.position.subtract(fromP.position).scale(force));
+
+      if (dist < fromP.size + toP.size) {
+        fromP.velocity = fromP.velocity
+          .subtract(toP.position.subtract(fromP.position)
+            .scale((1 - 1 / (fromP.size + toP.size)) / 5));
+      }
+    });
+  });
+}
+
+// Models if distance is LOW attraction is strong
+function simplePullRule(distance) {
+  return fuzzy.defuzz(fuzzy.implication(fuzzy.distance.low(distance), fuzzy.force.weak), 0, 10, 20);
+}
+
+// Models if distance is LOW or MEDIUM attraction is weak
+function complexPullRule(distance) {
+  return fuzzy.defuzz(fuzzy.implication(
+    fuzzy.or(fuzzy.distance.low(distance), fuzzy.distance.medium(distance)),
+    fuzzy.force.weak
+  ), 0, 10, 20);
+}
+
+// Models if distance is LOW repulsion is strong
+function pushRule(distance) {
+  return -fuzzy.defuzz(fuzzy.implication(fuzzy.distance.low(distance), fuzzy.force.weak), 0, 10, 20);
+}
+
+
 window.onload = () => {
   let canvas = document.getElementById('canvas');
   canvas.width = window.innerWidth;
@@ -150,53 +228,60 @@ window.onload = () => {
   let ctx = canvas.getContext('2d');
   let [width, height] = [canvas.width, canvas.height];
 
-  let redParticles = Particle.many(200,
+  let redParticles = Particle.many(50,
     () => Vector.random(new Vector(width / 4, height / 4),
       new Vector(width / 3 * 2, height / 3 * 2)),
     () => Vector.polar(random(1, 200), random(0, 2 * Math.PI)),
-    100, 5, 'red',
+    5, 'red',
   );
 
-  let greenParticles = Particle.many(200,
+  let yellowParticles = Particle.many(50,
     () => Vector.random(new Vector(width / 4, height / 4),
       new Vector(width / 3 * 2, height / 3 * 2)),
     () => Vector.polar(random(1, 100), random(0, 2 * Math.PI)),
-    100, 5, 'yellow',
+    5, 'yellow',
   );
 
-  let cyanParticles = Particle.many(200,
+  let cyanParticles = Particle.many(50,
     () => Vector.random(new Vector(width / 4, height / 4),
       new Vector(width / 3 * 2, height / 3 * 2)),
     () => Vector.polar(random(1, 100), random(0, 2 * Math.PI)),
-    100, 5, 'cyan',
+    5, 'cyan',
   );
 
   let animation = () => {
     ctx.clearRect(0, 0, width, height);
 
-    boundWorld(width, height, [...greenParticles, ...redParticles, ...cyanParticles])
+    boundWorld(width, height, [...yellowParticles, ...redParticles, ...cyanParticles])
 
-    attract(redParticles, greenParticles, -0.0004);
-    attract(redParticles, cyanParticles, 0.0004);
+    // attract(redParticles, yellowParticles, -0.0004);
+    // attract(redParticles, cyanParticles, 0.0004);
 
-    attract(cyanParticles, greenParticles, 0.0002);
-    attract(cyanParticles, redParticles, 0.00005);
+    // attract(cyanParticles, yellowParticles, 0.0002);
+    // attract(cyanParticles, redParticles, 0.00005);
 
-    attract(greenParticles, cyanParticles, -0.0002);
-    attract(greenParticles, redParticles, 0.0006);
+    // attract(yellowParticles, cyanParticles, -0.0002);
+    // attract(yellowParticles, redParticles, 0.0006);
 
-    attract(greenParticles, greenParticles, 0.002);
-    attract(redParticles, redParticles, 0.002);
-    attract(cyanParticles, cyanParticles, -0.001);
+    // attract(yellowParticles, yellowParticles, 0.002);
+    // attract(redParticles, redParticles, 0.002);
+    // attract(cyanParticles, cyanParticles, -0.001);
 
-    addFriction([...redParticles, ...greenParticles, ...cyanParticles], 0.82);
+    applyForceRule(redParticles, yellowParticles, simplePullRule, ctx);
+    applyForceRule(redParticles, redParticles, simplePullRule, ctx);
+
+    applyForceRule(yellowParticles, redParticles, pushRule, ctx);
+    // applyForceRule(redParticles, cyanParticles, complexPullRule, ctx);
+
+
+    addFriction([...redParticles, ...yellowParticles, ...cyanParticles], 0.82);
 
     redParticles.forEach(p => p.update());
-    greenParticles.forEach(p => p.update());
+    yellowParticles.forEach(p => p.update());
     cyanParticles.forEach(p => p.update());
 
     redParticles.forEach(p => p.render(ctx));
-    greenParticles.forEach(p => p.render(ctx));
+    yellowParticles.forEach(p => p.render(ctx));
     cyanParticles.forEach(p => p.render(ctx));
 
     window.requestAnimationFrame(animation);
