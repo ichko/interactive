@@ -184,12 +184,14 @@ function applyForceRule(fromParticles, toParticles, rule, ctx) {
 
       if (force > 0) {
         ctx.beginPath();
-        ctx.lineWidth = force * 10;
+        ctx.lineWidth = force;
         ctx.strokeStyle = 'white';
         ctx.moveTo(fromP.position.x, fromP.position.y);
         ctx.lineTo(toP.position.x, toP.position.y);
         ctx.stroke();
       }
+
+      force /= 10;
 
       fromP.velocity = fromP.velocity.add(toP.position.subtract(fromP.position).scale(force));
 
@@ -202,22 +204,42 @@ function applyForceRule(fromParticles, toParticles, rule, ctx) {
   });
 }
 
-// Models if distance is LOW attraction is strong
-function simplePullRule(distance) {
-  return fuzzy.defuzz(fuzzy.implication(fuzzy.distance.low(distance), fuzzy.force.weak), 0, 10, 20);
+function smallDistanceStrongAttraction(distance) {
+  return fuzzy.defuzz(fuzzy.implication(fuzzy.distance.low(distance), fuzzy.force.strong), 0, 10, 20);
 }
 
-// Models if distance is LOW or MEDIUM attraction is weak
-function complexPullRule(distance) {
+function smallOrMediumDistanceWeakAttraction(distance) {
+  return fuzzy.defuzz(fuzzy.implication(
+    fuzzy.and(fuzzy.distance.low(distance), fuzzy.distance.medium(distance)),
+    fuzzy.force.weak
+  ), 0, 10, 20);
+}
+
+function smallOrMediumDistanceWeakRepulsion(distance) {
   return fuzzy.defuzz(fuzzy.implication(
     fuzzy.or(fuzzy.distance.low(distance), fuzzy.distance.medium(distance)),
     fuzzy.force.weak
   ), 0, 10, 20);
 }
 
-// Models if distance is LOW repulsion is strong
-function pushRule(distance) {
-  return -fuzzy.defuzz(fuzzy.implication(fuzzy.distance.low(distance), fuzzy.force.weak), 0, 10, 20);
+function smallDistanceWeakRepulsion(distance) {
+  return -smallDistanceWeakAttraction(distance)
+}
+
+function smallDistanceWeakAttraction(distance) {
+  return fuzzy.defuzz(fuzzy.implication(fuzzy.distance.low(distance), fuzzy.force.weak), 0, 10, 20);
+}
+
+function mediumDistanceWeakAttraction(distance) {
+  return fuzzy.defuzz(fuzzy.implication(fuzzy.distance.medium(distance), fuzzy.force.weak), 0, 10, 20);
+}
+
+function highDistanceWeakRepulsion(distance) {
+  return -highDistanceWeakAttraction(distance);
+}
+
+function highDistanceWeakAttraction(distance) {
+  return fuzzy.defuzz(fuzzy.implication(fuzzy.distance.medium(distance), fuzzy.force.strong), 0, 10, 20);
 }
 
 
@@ -267,11 +289,18 @@ window.onload = () => {
     // attract(redParticles, redParticles, 0.002);
     // attract(cyanParticles, cyanParticles, -0.001);
 
-    applyForceRule(redParticles, yellowParticles, simplePullRule, ctx);
-    applyForceRule(redParticles, redParticles, simplePullRule, ctx);
+    applyForceRule(cyanParticles, redParticles, smallDistanceWeakRepulsion, ctx);
+    applyForceRule(cyanParticles, yellowParticles, mediumDistanceWeakAttraction, ctx);
 
-    applyForceRule(yellowParticles, redParticles, pushRule, ctx);
-    // applyForceRule(redParticles, cyanParticles, complexPullRule, ctx);
+    applyForceRule(redParticles, yellowParticles, smallDistanceStrongAttraction, ctx);
+    applyForceRule(redParticles, cyanParticles, smallDistanceWeakRepulsion, ctx);
+
+    applyForceRule(yellowParticles, cyanParticles, smallDistanceWeakRepulsion, ctx);
+    applyForceRule(yellowParticles, cyanParticles, highDistanceWeakAttraction, ctx);
+
+    applyForceRule(redParticles, redParticles, smallOrMediumDistanceWeakAttraction, ctx);
+    applyForceRule(cyanParticles, cyanParticles, smallOrMediumDistanceWeakAttraction, ctx);
+    applyForceRule(yellowParticles, yellowParticles, smallOrMediumDistanceWeakAttraction, ctx);
 
 
     addFriction([...redParticles, ...yellowParticles, ...cyanParticles], 0.82);
