@@ -1,5 +1,5 @@
 ## Examples
- - [Big glider](bigGlider.html)
+ - [Big gliders](bigGliders.html)
  - [Massive glider](massiveGlider.html)
  - [Simple gliders](simpleGliders.html)
  - [Grid](grid.html)
