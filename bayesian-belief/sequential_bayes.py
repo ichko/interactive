@@ -9,7 +9,7 @@ def set_ax_range():
 
 
 def range_plot(ax, f, x_range, y_range):
-    bins = 10
+    bins = 50
     xi, yi = np.mgrid[
         min(x_range):max(x_range):bins*1j,
         min(y_range):max(y_range):bins*1j
